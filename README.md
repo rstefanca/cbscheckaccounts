@@ -1,7 +1,5 @@
-Akka streams activator template
+Akka streams
 ===============================
-
-[![Build Status](https://travis-ci.org/typesafehub/activator-akka-stream-scala.svg?branch=master)](https://travis-ci.org/typesafehub/activator-akka-stream-scala)
 
 Demonstrate Akka streams in Scala.
 
