@@ -1,7 +1,6 @@
 package cz.codingmonkey.ibs.accountchecking
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
-import cz.codingmonkey.ibs.accountchecking.AccountChecker.getActiveClientsCount
 import cz.codingmonkey.ibs.accountchecking.Entities.{Account, Client}
 import org.apache.commons.dbutils.QueryRunner
 import org.apache.commons.dbutils.handlers.{MapListHandler, ScalarHandler}

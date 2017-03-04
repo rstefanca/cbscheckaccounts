@@ -9,11 +9,9 @@ import akka.stream.{ActorAttributes, ActorMaterializer, FlowShape}
 import akka.util.ByteString
 import cz.codingmonkey.ibs.accountchecking.Entities._
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.isNumeric
 
 import scala.concurrent.Future
-import scala.xml.Elem
 
 /**
   *
@@ -139,7 +137,6 @@ object AccountChecker extends Config with DB {
 
   private def calculateIbsAccountsChecksum(clientIdAndAccounts: (String, List[Account])) = {
     val sb = new StringBuilder
-    import scala.collection.JavaConversions._
     for (account <- clientIdAndAccounts._2) {
       // No record separator
       sb.append(account.externalId)
