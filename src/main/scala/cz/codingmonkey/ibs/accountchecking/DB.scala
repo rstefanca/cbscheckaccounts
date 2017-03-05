@@ -26,7 +26,7 @@ trait DB extends Queries {
     (if ((count % pageSize) > 0) p + 1 else p).asInstanceOf[Int]
   }
 
-  def getActiveExternalClients(page: Int, pageSize: Int = pageSize)(implicit executionContext: ExecutionContext): Future[List[Client]] = {
+  def getActiveClientsExternalIds(page: Int, pageSize: Int = pageSize)(implicit executionContext: ExecutionContext): Future[List[Client]] = {
     val query = activeExternalClientIdsPaged(page, pageSize)
     Future {
       val rows = new QueryRunner(dataSource).query(query, new MapListHandler())

@@ -122,7 +122,7 @@ object AccountChecker extends Config with DB {
     * */
 
     Source(1 to getTotalPages)
-      .mapAsync(2) { page => getActiveExternalClients(page)(dbDispatcher) }
+      .mapAsync(2) { page => getActiveClientsExternalIds(page)(dbDispatcher) }
       .via(clean)
       .via(checkSumsFlow)
       .map(line => ByteString(s"${q(line.clientIdCbs)},${q(line.cbsCheckSum)},${q(line.ibsCheckSum)},${q(line.input)},${q(line.matching)}" + System.lineSeparator()))
