@@ -14,6 +14,6 @@ object Entities {
 
   case class AccountCheckSumsSummary(clientIdCbs: String, clientIdIbs: String, cbsCheckSum: String, ibsCheckSum: String, input: String, matching: String)
 
-  case class Account(externalId: String, status: String, productSubtype: String)
+  case class Account(externalId: String, status: String, productType: String, productSubtype: String)
 
 }

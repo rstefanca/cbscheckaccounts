@@ -53,6 +53,7 @@ trait DB extends Queries {
       rows.asScala.map(r => Account(
         r.get("EXTERNALID").asInstanceOf[String],
         r.get("STATUS").asInstanceOf[String],
+        r.get("PRODUCTTYPE").asInstanceOf[String],
         r.get("PRODUCTSUBTYPE").asInstanceOf[String])
       ).toList
     }

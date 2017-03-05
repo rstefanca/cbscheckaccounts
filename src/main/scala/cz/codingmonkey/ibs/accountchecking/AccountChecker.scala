@@ -72,7 +72,7 @@ object AccountChecker extends Config with DB {
       //.map(resp => parseResponse(resp))
       .mapAsync(2) { d => {
       Future {
-        Thread.sleep(1000) //simulate ws call
+        Thread.sleep(500) //simulate ws call
         d
       }(dbDispatcher)
     }
@@ -109,7 +109,7 @@ object AccountChecker extends Config with DB {
       })
 
     //----- MAIN PROCESS -----
-    /*
+    /* IBS - imaginary banking system :)
     *  STAGES:
     *   1. takes batches of ids from IBS db by given page size
     *   2. cleans non-numeric values
@@ -141,12 +141,14 @@ object AccountChecker extends Config with DB {
       // No record separator
       sb.append(account.externalId)
       sb.append(";")
+      sb.append(account.productType)
+      sb.append(";")
       sb.append(account.productSubtype)
       sb.append(";")
       sb.append(account.status)
     }
-    val strInput = sb.toString()
-    val input = if (strInput.isEmpty) None else Some(strInput)
+
+    val input = if (sb.isEmpty) None else Some(sb.toString())
     IbsClientIdAndChecksum(clientIdAndAccounts._1, input.map(DigestUtils.md5Hex), input)
   }
 
@@ -176,6 +178,6 @@ object AccountChecker extends Config with DB {
     }
   }
 
-  def q(str: String): String = "\"" + str + "\""
+  private def q(str: String): String = "\"" + str + "\""
 
 }

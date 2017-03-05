@@ -51,7 +51,7 @@ trait Queries {
 
   val selectAccountsByContract: String =
     """
-      |select EXTERNALID, GFO_PRODUCT.PRODUCTSUBTYPE, GFO_PRODUCT.STATUS from GFO_PRODUCT  join GFO_PARTYCONTRACT  USING (contract) where basedon=? and producttype = 'A' and STATUS <> 'CLOSED' and status <> 'CLOSED_CANCEL'
+      |select EXTERNALID, GFO_PRODUCT.PRODUCTTYPE, GFO_PRODUCT.PRODUCTSUBTYPE, GFO_PRODUCT.STATUS from GFO_PRODUCT  join GFO_PARTYCONTRACT  USING (contract) where basedon=? and producttype = 'A' and STATUS <> 'CLOSED' and status <> 'CLOSED_CANCEL'
 
     """.stripMargin
 
