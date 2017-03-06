@@ -13,7 +13,7 @@ trait Config {
 
   val databaseUrl: String = databaseConfig.getString("url")
   val databaseUser: String = databaseConfig.getString("user")
-  val databasePassword:String = databaseConfig.getString(" password")
+  val databasePassword:String = databaseConfig.getString("password")
 
   val pageSize: Int = config.getInt("checker.pageSize")
 

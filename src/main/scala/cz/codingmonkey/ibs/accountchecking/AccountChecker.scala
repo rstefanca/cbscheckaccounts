@@ -72,7 +72,7 @@ object AccountChecker extends Config with DB {
       //.map(resp => parseResponse(resp))
       .mapAsync(2) { d => {
       Future {
-        Thread.sleep(500) //simulate ws call
+        //Thread.sleep(500) //simulate ws call
         d
       }(dbDispatcher)
     }
@@ -86,7 +86,7 @@ object AccountChecker extends Config with DB {
       * @return source of IbsClientIdAndChecksum
       */
     def dbFlow: Flow[Seq[Client], IbsClientIdAndChecksum, Unit] = Flow[Seq[Client]]
-      .mapAsync(1) { l => loadIbsAccountsAndCalculateChecksums(l) }
+      .mapAsync(4) { l => loadIbsAccountsAndCalculateChecksums(l) }
       .mapConcat(identity)
 
     /**
@@ -121,13 +121,17 @@ object AccountChecker extends Config with DB {
     *
     * */
 
+    val start = System.currentTimeMillis()
     Source(1 to getTotalPages)
-      .mapAsync(2) { page => getActiveClientsExternalIds(page)(dbDispatcher) }
+      .mapAsync(1) { page => getActiveClientsExternalIds(page)(dbDispatcher) }
       .via(clean)
       .via(checkSumsFlow)
       .map(line => ByteString(s"${q(line.clientIdCbs)},${q(line.cbsCheckSum)},${q(line.ibsCheckSum)},${q(line.input)},${q(line.matching)}" + System.lineSeparator()))
       .runWith(resultSink)
       .onComplete(_ => {
+        val stop = System.currentTimeMillis()
+        println(s"Duration: ${stop - start}")
+        println("Done :)")
         closeDataSource()
         system.shutdown()
       })
@@ -137,7 +141,7 @@ object AccountChecker extends Config with DB {
 
   private def calculateIbsAccountsChecksum(clientIdAndAccounts: (String, List[Account])) = {
     val sb = new StringBuilder
-    for (account <- clientIdAndAccounts._2) {
+    clientIdAndAccounts._2.foreach(account => {
       // No record separator
       sb.append(account.externalId)
       sb.append(";")
@@ -146,8 +150,7 @@ object AccountChecker extends Config with DB {
       sb.append(account.productSubtype)
       sb.append(";")
       sb.append(account.status)
-    }
-
+    })
     val input = if (sb.isEmpty) None else Some(sb.toString())
     IbsClientIdAndChecksum(clientIdAndAccounts._1, input.map(DigestUtils.md5Hex), input)
   }
@@ -168,7 +171,7 @@ object AccountChecker extends Config with DB {
       if (ibs.checksum == cbs.checksum)
         "MATCH"
       else
-        "DON'T MATCH"
+        "MISMATCH"
     } else {
       if (ibs.checksum.isDefined && cbs.checksum.isEmpty) {
         "MISSING CBS"

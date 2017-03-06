@@ -64,6 +64,10 @@ trait DB extends Queries {
   }
 
   private def getDataSource: HikariDataSource = {
+
+    println(s"dbUrl: $databaseUrl")
+    println(s"username: $databaseUser")
+
     val config = new HikariConfig()
     config.setDriverClassName("oracle.jdbc.OracleDriver")
     config.setJdbcUrl(databaseUrl)
