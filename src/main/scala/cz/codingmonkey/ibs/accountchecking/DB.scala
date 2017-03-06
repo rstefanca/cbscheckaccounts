@@ -85,15 +85,12 @@ trait DB extends Queries {
     val questionMarksList = clientIdAndContractId.map(_ => "?").asJava
     val questionMarks: String = StringUtils.join(questionMarksList, ",")
     Future {
-      val rows = new QueryRunner(dataSource).query(selectAccountsByContract(questionMarks), new KeyedHandler("BASEDON"), contractIds: _*)
-
-      val res = clientIdAndContractId
-        .map(pair => ((pair._1, pair._2), if (rows.get(BigDecimal.valueOf(pair._2)) != null) Some(mapToAccount(rows.get(BigDecimal.valueOf(pair._2)))) else None))
+      val rows = new QueryRunner(dataSource).query(selectAccountsByContract(questionMarks), new MapListHandler(), contractIds: _*)
+      val accountsByContract = rows.asScala
+        .map(r => (r.get("BASEDON").asInstanceOf[BigDecimal].longValue(), mapToAccount(r)))
         .groupBy(_._1)
-        .map(r => {println(r);(r._1._1, r._2.filter(_._2.isDefined).map(_._2.get).toList)})
-        .toList // foo rocket science
 
-      res
+      clientIdAndContractId.map(ci => (ci._1, accountsByContract.getOrElse(ci._2, List.empty).map(_._2).toList)).toList
     }
   }
 

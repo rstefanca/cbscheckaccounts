@@ -19,7 +19,6 @@ import scala.concurrent.Future
   */
 object AccountChecker extends Config with DB {
 
-
   def main(args: Array[String]): Unit = {
 
     implicit val system = ActorSystem("accountchecker")
@@ -55,7 +54,7 @@ object AccountChecker extends Config with DB {
 
     /**
       * Cleans non-numeric values from the batch. Keeps the size of the batch - batches are converted into stream of single items
-      * then filtered and than again grouped by given page size
+      * then filtered out and then again grouped by given page size
       *
       * @return flow of batches of ids
       */
