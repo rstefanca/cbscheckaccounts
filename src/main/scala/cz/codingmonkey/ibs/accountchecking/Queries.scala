@@ -43,15 +43,28 @@ trait Queries {
       |		    and pcBasedOn.ENTITYSTATUS = 'A'
     """.stripMargin
 
+  @Deprecated
   val selectContractByClientExternalId: String =
     """
       |select partyContract.contract from GFO_PARTYCONTRACT partyContract, GFO_CLIENT client
-      |where client.contract=partyContract.contract and client.externalId=? and partyContract.partyRole='O'
+      |where client.contract=partyContract.contract  and partyContract.partyRole='O' and client.externalId=?
+    """.stripMargin
+
+  def selectContractByClientExternalIds(questionMarks: String): String =
+    s"""
+      |select client.externalId, partyContract.contract from GFO_PARTYCONTRACT partyContract, GFO_CLIENT client
+      |where client.contract=partyContract.contract  and partyContract.partyRole='O' and client.externalId in ($questionMarks)
     """.stripMargin
 
   val selectAccountsByContract: String =
     """
-      |select EXTERNALID, GFO_PRODUCT.PRODUCTTYPE, GFO_PRODUCT.PRODUCTSUBTYPE, GFO_PRODUCT.STATUS from GFO_PRODUCT  join GFO_PARTYCONTRACT  USING (contract) where basedon=? and producttype = 'A' and STATUS <> 'CLOSED' and status <> 'CLOSED_CANCEL'
+      |select EXTERNALID, GFO_PRODUCT.PRODUCTTYPE, GFO_PRODUCT.PRODUCTSUBTYPE, GFO_PRODUCT.STATUS, GFO_PARTYCONTRACT.BASEDON from GFO_PRODUCT join GFO_PARTYCONTRACT  USING (contract) where basedon=? and producttype = 'A' and STATUS <> 'CLOSED' and status <> 'CLOSED_CANCEL'
+
+    """.stripMargin
+
+  def selectAccountsByContract(questionMarks: String): String =
+    s"""
+      |select EXTERNALID, GFO_PRODUCT.PRODUCTTYPE, GFO_PRODUCT.PRODUCTSUBTYPE, GFO_PRODUCT.STATUS, GFO_PARTYCONTRACT.BASEDON from GFO_PRODUCT join GFO_PARTYCONTRACT  USING (contract) where basedon in ($questionMarks) and producttype = 'A' and STATUS <> 'CLOSED' and status <> 'CLOSED_CANCEL'
 
     """.stripMargin
 

@@ -41,15 +41,14 @@ object AccountChecker extends Config with DB {
 
     def loadIbsAccountsAndCalculateChecksums(batch: Seq[Client]): Future[List[IbsClientIdAndChecksum]] = {
       //inner stream to calculate account checksum for each client
-      Source(batch.toList)
-        .mapAsync(2) { client =>
-          getClientsContractId(client)(dbDispatcher).map(contract => (client.externalClientId, contract))
-        }
-        .mapAsync(2) { clientIdAndContract =>
+      val contractIds = getClientsContractIds(batch)(dbDispatcher)
+      contractIds.flatMap(contractIds =>
+        Source(contractIds)
+          .mapAsync(4) { clientIdAndContract =>
           getAccountsByContractId(clientIdAndContract._2)(dbDispatcher).map(accounts => (clientIdAndContract._1, accounts))
         }
         .map(clientAndAccounts => calculateIbsAccountsChecksum(clientAndAccounts))
-        .runFold(List.empty[IbsClientIdAndChecksum]) { (list, checksum) => list :+ checksum }
+          .runFold(List.empty[IbsClientIdAndChecksum]) { (list, checksum) => list :+ checksum })
     }
 
     // ---- FLOWS ----
@@ -86,8 +85,12 @@ object AccountChecker extends Config with DB {
       * @return source of IbsClientIdAndChecksum
       */
     def dbFlow: Flow[Seq[Client], IbsClientIdAndChecksum, Unit] = Flow[Seq[Client]]
-      .mapAsync(4) { l => loadIbsAccountsAndCalculateChecksums(l) }
+      //.mapAsync(4) { l => loadIbsAccountsAndCalculateChecksums(l) }
+      .mapAsync(4) { batch => getClientsContractIds(batch)(dbDispatcher) }
+      .mapAsync(4) { batch => getAccountsByContractIds(batch)(dbDispatcher) }
       .mapConcat(identity)
+      .map(item => calculateIbsAccountsChecksum(item))
+
 
     /**
       * Flow for parallel processing. Both parallel streams are combined into [[AccountCheckSumsSummary]]
@@ -130,8 +133,8 @@ object AccountChecker extends Config with DB {
       .runWith(resultSink)
       .onComplete(_ => {
         val stop = System.currentTimeMillis()
-        println(s"Duration: ${stop - start}")
         println("Done :)")
+        println(s"Duration: ${stop - start}")
         closeDataSource()
         system.shutdown()
       })
