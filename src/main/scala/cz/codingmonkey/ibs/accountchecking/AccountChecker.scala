@@ -32,7 +32,7 @@ object AccountChecker extends Config with DB {
 
     val ioDispatcherAttributes = ActorAttributes.dispatcher("io-dispatcher")
 
-    lazy val dbDispatcher = system.dispatchers.lookup("io-dispatcher") // todo special db dispatcher
+    lazy val dbDispatcher = system.dispatchers.lookup("db-dispatcher") // todo special db dispatcher
 
     lazy val accountCheckResultFile: File = new File("account_check.csv")
 
@@ -125,7 +125,7 @@ object AccountChecker extends Config with DB {
 
     val start = System.currentTimeMillis()
     Source(1 to getTotalPages)
-      .mapAsync(1) { page => getActiveClientsExternalIds(page)(dbDispatcher) }
+      .mapAsync(2) { page => getActiveClientsExternalIds(page)(dbDispatcher) }
       .via(clean)
       .via(checkSumsFlow)
       .map(line => ByteString(s"${q(line.clientIdCbs)},${q(line.cbsCheckSum)},${q(line.ibsCheckSum)},${q(line.input)},${q(line.matching)}" + System.lineSeparator()))
